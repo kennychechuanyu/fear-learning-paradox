@@ -270,12 +270,12 @@ create_figure_1 <- function(summary_data, trajectory_data = NULL) {
 # ============================================================================
 
 create_model_variance_panel <- function() {
-  # Simulate two exemplar participants
+  # Simulate two exemplar participants (no noise for clean trajectories)
   simulate_traj <- function(alpha, n_trials = 30, shock_trials, w0 = -1, w1 = 4,
-                            A = 0, K = 100, sigma = 0.5) {
+                            A = 0, K = 100) {
     v <- 0; responses <- numeric(n_trials)
     for (t in seq_len(n_trials)) {
-      responses[t] <- A + (K - A) / (1 + exp(-(w0 + w1 * v))) + rnorm(1, 0, sigma)
+      responses[t] <- A + (K - A) / (1 + exp(-(w0 + w1 * v)))
       if (t %in% shock_trials) v <- v + alpha * (1 - v)
       else v <- v + alpha * (0 - v)
     }
@@ -283,72 +283,52 @@ create_model_variance_panel <- function() {
                shock = seq_len(n_trials) %in% shock_trials)
   }
 
-  set.seed(12345)
   shocks_A <- c(10, 12, 14, 16, 18, 20, 22, 24, 26, 28)
   shocks_B <- c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
 
   dA <- simulate_traj(0.90, shock_trials = shocks_A)
   dB <- simulate_traj(0.10, shock_trials = shocks_B)
 
-  dA$individual <- "Fast learner (\u03b1 = 0.90, late reinforcement)"
-  dB$individual <- "Slow learner (\u03b1 = 0.10, early reinforcement)"
+  lab_A <- "Fast learner (\u03b1 = 0.90)"
+  lab_B <- "Slow learner (\u03b1 = 0.10)"
+  dA$individual <- lab_A
+  dB$individual <- lab_B
   dA$trial_type <- ifelse(dA$shock, "Shock", "No shock")
   dB$trial_type <- ifelse(dB$shock, "Shock", "No shock")
-
   all_data <- rbind(dA, dB)
-
-  # Compute means for annotation
-  mean_A <- round(mean(dA$response), 1)
-  mean_B <- round(mean(dB$response), 1)
-  fld_A <- round(dA$response[30] - dA$response[1], 1)
-  fld_B <- round(dB$response[30] - dB$response[1], 1)
-
-  ind_levels <- c(
-    "Fast learner (\u03b1 = 0.90, late reinforcement)",
-    "Slow learner (\u03b1 = 0.10, early reinforcement)"
-  )
-  all_data$individual <- factor(all_data$individual, levels = ind_levels)
-
-  table_text <- sprintf(
-    "Fast learner:  Mean = %s,  First-last = %s\nSlow learner:  Mean = %s,  First-last = %s",
-    mean_A, fld_A, mean_B, fld_B
-  )
+  all_data$individual <- factor(all_data$individual, levels = c(lab_A, lab_B))
 
   p <- ggplot(all_data, aes(x = trial, y = response, color = individual, group = individual)) +
-    geom_line(linewidth = 0.9, alpha = 0.8) +
-    geom_point(aes(shape = trial_type), size = 1.8, alpha = 0.9) +
+    geom_line(linewidth = 1.1, alpha = 0.85) +
+    geom_point(aes(shape = trial_type), size = 2.0, alpha = 0.85, stroke = 0.4) +
     scale_shape_manual(values = c("Shock" = 17, "No shock" = 16), name = NULL) +
-    scale_color_manual(values = setNames(c("#E63946", "#1565C0"), ind_levels), name = NULL) +
-    # Annotation box
-    annotate("rect", xmin = 11.5, xmax = 30.5, ymin = 2, ymax = 20,
-             fill = "white", color = "gray50", linewidth = 0.4, alpha = 0.92) +
-    annotate("text", x = 30, y = 11, label = table_text,
-             hjust = 1, vjust = 0.5, size = 2.7, lineheight = 1.15, color = "black") +
+    scale_color_manual(values = setNames(c("#D4753B", "#2E6B8A"), c(lab_A, lab_B)), name = NULL) +
     scale_x_continuous(breaks = c(1, 10, 20, 30)) +
+    scale_y_continuous(breaks = seq(0, 100, 25)) +
     coord_cartesian(xlim = c(1, 30), ylim = c(0, 100)) +
     labs(x = "Trial", y = "Response", tag = "a") +
-    annotate("text", x = 1, y = 99,
-             label = "Different learning rates, similar behavioral summaries",
-             hjust = 0, size = 3.5, fontface = "bold", color = "gray25") +
     theme_minimal(base_size = 13, base_family = "Helvetica") +
     theme(
       plot.tag = element_text(face = "bold", size = 14),
       plot.tag.position = c(0, 1.02),
       legend.position = "bottom",
-      legend.text = element_text(size = 9),
-      legend.key.size = unit(0.8, "lines"),
-      legend.margin = margin(t = -5, b = 0),
-      legend.box = "horizontal",
+      legend.box = "vertical",
+      legend.spacing.y = unit(-2, "pt"),
+      legend.text = element_text(size = 10),
+      legend.key.size = unit(1, "lines"),
+      legend.margin = margin(t = -3, b = 0),
       panel.grid.minor = element_blank(),
       panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
       axis.title = element_text(size = 11, color = "gray30"),
       axis.text = element_text(size = 10, color = "gray40"),
-      plot.margin = margin(t = 18, r = 10, b = 2, l = 5),
+      plot.margin = margin(t = 8, r = 10, b = 2, l = 5),
       plot.background = element_rect(fill = "white", color = NA),
       panel.background = element_rect(fill = "white", color = NA)
     ) +
-    guides(color = guide_legend(order = 1, nrow = 1),
-           shape = guide_legend(order = 2, nrow = 1))
+    guides(
+      color = guide_legend(order = 1, nrow = 2, override.aes = list(linewidth = 1.2, size = 2.5)),
+      shape = guide_legend(order = 2, nrow = 1, override.aes = list(size = 2.5))
+    )
 
   p
 }
@@ -433,17 +413,24 @@ build_heatmap <- function(data, panel_letter, panel_label, add_footer = FALSE) {
   p
 }
 
-panel_b <- build_heatmap(behavioral_data, 'b', 'Behavioral markers')
-panel_c <- build_heatmap(cognitive_data, 'c', 'Cognitive markers', add_footer = TRUE)
+panel_b <- build_heatmap(behavioral_data, 'a', 'Behavioral markers')
+panel_c <- build_heatmap(cognitive_data, 'b', 'Cognitive markers', add_footer = TRUE)
 
-# Combine all three panels
-fig1_combined <- (panel_mv / panel_b / panel_c) +
-  plot_layout(heights = c(2.5, 3, 1.3)) &
-  theme(plot.background = element_rect(fill = 'white', color = NA))
+# Figure 1: 2-panel heatmap only (model variance is Supplementary Fig 1)
+fig1 <- (panel_b / panel_c) +
+  plot_layout(heights = c(3, 1.3), guides = 'collect') &
+  theme(legend.position = 'right',
+        plot.background = element_rect(fill = 'white', color = NA))
 
-ggsave("fig1_reliability_paradox_pure.png", fig1_combined,
-       width = 7.09, height = 8.5, dpi = 600, bg = "white", units = "in")
-ggsave("fig1_reliability_paradox_pure.pdf", fig1_combined,
-       width = 7.09, height = 8.5, bg = "white", device = cairo_pdf, units = "in")
+ggsave("fig1_reliability_paradox_pure.png", fig1,
+       width = 7.09, height = 6.5, dpi = 600, bg = "white", units = "in")
+ggsave("fig1_reliability_paradox_pure.pdf", fig1,
+       width = 7.09, height = 6.5, bg = "white", device = cairo_pdf, units = "in")
+
+# Supplementary Figure 1: Model variance (standalone, new colors)
+ggsave("suppfig1_model_variance.png", panel_mv,
+       width = 7, height = 5, dpi = 600, bg = "white", units = "in")
+ggsave("suppfig1_model_variance.pdf", panel_mv,
+       width = 7, height = 5, bg = "white", device = cairo_pdf, units = "in")
 
 cat("Done! Saved 3-panel fig1 (model variance + heatmaps)\n")
