@@ -1,12 +1,5 @@
-# ================================================================================
-# Alpha Identifiability Simulation
-# ================================================================================
-#
-# 7x7 factorial (trial count x reinforcement rate) testing parameter
-# identifiability across design configurations. Uses uniform alpha [0.1, 0.9].
-#
-# Author: Kenny Yu
-# ================================================================================
+# Alpha identifiability simulation
+# Factorial design: trial count × reinforcement rate
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
@@ -20,9 +13,7 @@ pacman::p_load(
 
 set.seed(42)
 
-# ================================================================================
-# 1. Core Simulation Functions
-# ================================================================================
+# --- Core Simulation Functions ---
 
 simulate_conditioning_session <- function(design, alpha, w0, w1, A, K, sigma_y) {
   n_trials <- nrow(design)
@@ -64,23 +55,18 @@ create_experimental_design <- function(n_trials,
   n_cs_minus <- n_trials - n_cs_plus
 
   if (ordering == "blocked") {
-    # All CS+ trials first, then CS- trials
     cs_sequence <- c(rep(1, n_cs_plus), rep(0, n_cs_minus))
   } else if (ordering == "alternating") {
-    # Alternate as much as possible
     cs_sequence <- rep(c(1, 0), length.out = n_trials)
     n_ones <- sum(cs_sequence)
     if (n_ones > n_cs_plus) {
-      # Remove extra 1s
       ones_idx <- which(cs_sequence == 1)
       cs_sequence[sample(ones_idx, n_ones - n_cs_plus)] <- 0
     } else if (n_ones < n_cs_plus) {
-      # Add more 1s
       zeros_idx <- which(cs_sequence == 0)
       cs_sequence[sample(zeros_idx, n_cs_plus - n_ones)] <- 1
     }
   } else {
-    # Random ordering
     cs_sequence <- sample(rep(c(1, 0), c(n_cs_plus, n_cs_minus)))
   }
 
@@ -173,9 +159,7 @@ recover_params_joint_mle <- function(responses, design, A, K, sigma_y) {
 }
 
 
-# ================================================================================
-# 2. Participant Generation
-# ================================================================================
+# --- Participant Generation (uniform alpha, matching main analysis distributions) ---
 
 generate_uniform_participants <- function(n_participants = 100) {
   alpha <- runif(n_participants, min = 0.05, max = 0.95)
@@ -191,9 +175,7 @@ generate_uniform_participants <- function(n_participants = 100) {
 }
 
 
-# ================================================================================
-# 3. Identifiability Metrics
-# ================================================================================
+# --- Identifiability Metrics ---
 
 compute_identifiability_metrics <- function(alpha_true, alpha_hat, n_bootstrap = 1000) {
 
@@ -254,9 +236,7 @@ compute_identifiability_metrics <- function(alpha_true, alpha_hat, n_bootstrap =
 }
 
 
-# ================================================================================
-# 4. Main Simulation
-# ================================================================================
+# --- Main Simulation Function ---
 
 run_identifiability_simulation <- function(
     n_participants = 100,
@@ -394,8 +374,6 @@ run_identifiability_simulation <- function(
 
   results_summary <- do.call(rbind, results_list)
 
-  end_time <- Sys.time()
-  elapsed <- as.numeric(difftime(end_time, start_time, units = "mins"))
   output_data <- paste0(output_prefix, "_results.RData")
   output_csv <- paste0(output_prefix, "_summary.csv")
 
@@ -408,13 +386,14 @@ run_identifiability_simulation <- function(
 
   write.csv(results_summary, output_csv, row.names = FALSE)
 
+  cat("  R2 range: [", round(min(results_summary$R2, na.rm = TRUE), 3), ",",
+      round(max(results_summary$R2, na.rm = TRUE), 3), "]\n")
+
   return(results_summary)
 }
 
 
-# ================================================================================
-# 5. Visualization Functions
-# ================================================================================
+# --- Visualization Functions ---
 
 visualize_identifiability_heatmap <- function(results_summary,
                                               output_file = "alpha_identifiability_heatmap") {
@@ -446,7 +425,7 @@ visualize_identifiability_heatmap <- function(results_summary,
       limits = c(0, 1),
       breaks = seq(0, 1, 0.2),
       labels = sprintf("%.1f", seq(0, 1, 0.2)),
-      name = "R²"
+      name = expression(R^2)
     ) +
 
     labs(
@@ -495,9 +474,7 @@ visualize_identifiability_heatmap <- function(results_summary,
 }
 
 
-# ================================================================================
-# 6. Design Summary
-# ================================================================================
+# --- Descriptive Design Summary ---
 
 analyze_design_effects <- function(results_summary,
                                   output_file = "alpha_identifiability_design_summary") {
@@ -594,6 +571,8 @@ analyze_design_effects <- function(results_summary,
   write.csv(rate_summary, paste0(output_file, "_rates.csv"), row.names = FALSE)
   write.csv(decomposition, paste0(output_file, "_decomposition.csv"), row.names = FALSE)
 
+  cat(sprintf('R2 range: %.2f -- %.2f\n', min(results_summary$R2, na.rm=TRUE), max(results_summary$R2, na.rm=TRUE)))
+
   invisible(list(
     overall = overall_summary,
     extrema = extrema,
@@ -604,9 +583,7 @@ analyze_design_effects <- function(results_summary,
 }
 
 
-# ================================================================================
-# 7. Main Execution
-# ================================================================================
+# --- Main Execution ---
 
 main <- function() {
   results <- run_identifiability_simulation(
@@ -637,6 +614,8 @@ main <- function() {
   ))
 }
 
+
+# --- Run if not in interactive mode ---
 
 if (!interactive()) {
   results <- main()

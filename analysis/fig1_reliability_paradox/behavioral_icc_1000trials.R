@@ -1,10 +1,6 @@
-# ================================================================================
-# Behavioral ICC at 1000 trials per session
-# ================================================================================
-#
+# Behavioral ICC at 1000 trials per session.
 # Tests whether extending protocols to 1000 trials improves behavioral
-# test-retest reliability. Learning rate recovery is not performed here
-# because the focus is on behavioral summaries only.
+# test-retest reliability (behavioral summaries only, no learning rate recovery).
 
 library(tidyverse)
 
@@ -39,8 +35,6 @@ simulate_session <- function(design, alpha, w0, w1, A = 0, K = 100, sigma_y = 5)
   }
   resp
 }
-
-# ================================================================================
 
 set.seed(42)
 

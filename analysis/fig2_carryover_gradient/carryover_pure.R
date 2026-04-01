@@ -1,7 +1,4 @@
-# =============================================================================
-# Carry-over gradient WITHOUT generalization (gamma=0)
-# Generates carry-over results for Fig 2c.
-# =============================================================================
+# Carry-over gradient without generalization (gamma=0). Generates carry-over results for Fig 2c.
 
 library(future.apply)
 
@@ -166,24 +163,15 @@ run_one <- function(iter, n_part, decay, gamma) {
     last_trt = icc_2_1(last_A, last_B))
 }
 
-# =============================================================================
-# Run simulation
-# =============================================================================
 plan(multisession, workers = max(1, parallel::detectCores() - 1))
 
 all_results <- list()
 for (df in DECAY_FACTORS) {
-  cat(sprintf("  decay = %.2f, gamma = %.2f | %d iterations ... ", df, GAMMA_TRUE, N_BOOTSTRAP))
-  t0 <- Sys.time()
-
   results <- future_lapply(
     seq_len(N_BOOTSTRAP),
     function(i) run_one(i, N_PARTICIPANTS, df, GAMMA_TRUE),
     future.seed = TRUE
   )
-
-  t1 <- Sys.time()
-  cat(sprintf("done in %.1f sec\n", as.numeric(difftime(t1, t0, units = "secs"))))
 
   mat <- do.call(rbind, results)
   beh_avg <- rowMeans(mat[, c("slope_trt", "fl_trt", "last_trt")], na.rm = TRUE)

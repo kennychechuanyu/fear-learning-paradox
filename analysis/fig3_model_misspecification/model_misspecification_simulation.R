@@ -1,12 +1,8 @@
-# Model Misspecification Simulation
-#
-# Demonstrate that using the wrong computational framework yields
-# unreliable cognitive marker estimates, even with identical data.
-# Compares Pearce-Hall (dynamic attention-modulated learning)
-# vs Rescorla-Wagner (fixed learning rate) on same data.
-#
-# Author: Kenny Yu
+# Model misspecification simulation
+# Compares recovery quality of correct (Pearce-Hall) vs. misspecified (RW) model
 
+
+# Required packages
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
   tidyverse,
@@ -14,11 +10,23 @@ pacman::p_load(
   scales
 )
 
+# Working directory setup
+if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+  script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
+  if (basename(script_dir) == "source 3") {
+    setwd(script_dir)
+  } else if (dir.exists("source 3")) {
+    setwd("source 3")
+  }
+} else {
+  if (basename(getwd()) != "source 3" && dir.exists("source 3")) {
+    setwd("source 3")
+  }
+}
+
 set.seed(42)
 
-# ================================================================================
-# Pearce-Hall Model (Dynamic Learning Rate)
-# ================================================================================
+# --- Pearce-Hall Model (Dynamic Learning Rate) ---
 
 simulate_pearce_hall <- function(design, alpha_base, kappa_init, w0, w1, A, K, sigma_y) {
   n_trials <- nrow(design)
@@ -69,9 +77,7 @@ simulate_pearce_hall <- function(design, alpha_base, kappa_init, w0, w1, A, K, s
 }
 
 
-# ================================================================================
-# Rescorla-Wagner Model (Fixed Learning Rate)
-# ================================================================================
+# --- Rescorla-Wagner Model (Fixed Learning Rate) ---
 
 simulate_rescorla_wagner <- function(design, alpha, w0, w1, A, K, sigma_y) {
   n_trials <- nrow(design)
@@ -96,9 +102,7 @@ simulate_rescorla_wagner <- function(design, alpha, w0, w1, A, K, sigma_y) {
 }
 
 
-# ================================================================================
-# Parameter Recovery Functions
-# ================================================================================
+# --- Parameter Recovery Functions ---
 
 recover_alpha_pearce_hall <- function(responses, design, A, K, w0, w1, sigma_y, kappa_init = 1.0) {
   if (any(is.na(responses))) {
@@ -207,9 +211,7 @@ recover_alpha_rescorla_wagner <- function(responses, design, A, K, w0, w1, sigma
 }
 
 
-# ================================================================================
-# Experimental Design Generation
-# ================================================================================
+# --- Experimental Design Generation ---
 
 create_experimental_design <- function(n_trials = 40,
                                       reinforcement_rate = 0.5,
@@ -238,9 +240,7 @@ create_experimental_design <- function(n_trials = 40,
 }
 
 
-# ================================================================================
-# Main Simulation
-# ================================================================================
+# --- Main Simulation ---
 
 run_model_misspecification_simulation <- function(
     n_participants = 1000,
@@ -251,10 +251,8 @@ run_model_misspecification_simulation <- function(
     K_param = 100
 ) {
 
-  # Generate participants with uniform alpha_base distribution
   alpha_base_true <- runif(n_participants, min = 0.1, max = 0.9)
 
-  # Generate w0, w1 from distributions (pure simulation, no empirical data)
   w0 <- pmin(pmax(rnorm(n_participants, mean = -1, sd = 1.5), -5), 4)
   w1 <- runif(n_participants, min = 2, max = 8)
 
@@ -265,7 +263,6 @@ run_model_misspecification_simulation <- function(
     w1 = w1
   )
 
-  # Storage for results
   results <- data.frame(
     participant_id = participants$participant_id,
     alpha_base_true = participants$alpha_base_true,
@@ -275,10 +272,7 @@ run_model_misspecification_simulation <- function(
     converged_wrong = FALSE
   )
 
-  # Simulate each participant
   for (i in 1:n_participants) {
-
-    if (i %% 250 == 0) cat("  Progress:", i, "/", n_participants, "\n")
 
     design <- create_experimental_design(
       n_trials = n_trials,
@@ -339,6 +333,9 @@ run_model_misspecification_simulation <- function(
     results$alpha_recovered_wrong_model[valid_wrong]
   )^2
 
+  cat("Correct model R2:", round(R2_correct, 3),
+      "| Wrong model R2:", round(R2_wrong, 3), "\n")
+
   save(
     results,
     participants,
@@ -357,22 +354,19 @@ run_model_misspecification_simulation <- function(
 }
 
 
-# ================================================================================
-# Visualization
-# ================================================================================
+# --- Visualization Function ---
 
 create_model_misspecification_figure <- function(results_path = "model_misspecification_results.RData") {
 
   load(results_path)
 
-  # Panel B: Wrong Model - identify example participants first
+  # Panel B processed first to identify example participants shared across both panels
   panel_b_data <- results %>%
     filter(!is.na(alpha_recovered_wrong_model))
 
   R2_b <- cor(panel_b_data$alpha_base_true, panel_b_data$alpha_recovered_wrong_model)^2
 
-  # Find examples: different true alphas with similar estimated alphas
-  # Search all pairs for the best convergence example
+  # Find participants with very different true alphas but similar wrong-model estimates
   best_pair <- NULL; best_score <- Inf
   for (ii in 1:(nrow(panel_b_data)-1)) {
     for (jj in (ii+1):nrow(panel_b_data)) {
@@ -399,13 +393,11 @@ create_model_misspecification_figure <- function(results_path = "model_misspecif
     example2 <- NULL
   }
 
-  # Panel A: Correct Model
   panel_a_data <- results %>%
     filter(!is.na(alpha_recovered_correct_model))
 
   R2_a <- cor(panel_a_data$alpha_base_true, panel_a_data$alpha_recovered_correct_model)^2
 
-  # Mark the same example participants in Panel A
   if (!is.null(example1) && !is.null(example2)) {
     panel_a_data <- panel_a_data %>%
       mutate(
@@ -441,13 +433,11 @@ create_model_misspecification_figure <- function(results_path = "model_misspecif
     geom_point(data = panel_a_data %>% filter(is_example),
                size = 3.5, color = "black", shape = 16, alpha = 1) +
 
-    # Model annotation inside panel
     annotate("text", x = 0.03, y = 0.97,
              label = "Correct model\n(Pearce\u2013Hall)",
              size = 3.2, color = "#1565C0", fontface = "italic",
              hjust = 0, vjust = 1) +
 
-    # R2 annotation
     annotate("text", x = 0.97, y = 0.03,
              label = sprintf("R\u00b2 = %.2f", R2_a),
              size = 4, fontface = "bold", color = "#1976D2",
@@ -493,19 +483,16 @@ create_model_misspecification_figure <- function(results_path = "model_misspecif
     geom_point(data = panel_b_data %>% filter(is_example),
                size = 3.5, color = "black", shape = 16, alpha = 1) +
 
-    # Model annotation inside panel
     annotate("text", x = 0.03, y = 0.97,
              label = "Misspecified model\n(Rescorla\u2013Wagner)",
              size = 3.2, color = "#E64A19", fontface = "italic",
              hjust = 0, vjust = 1) +
 
-    # R2 annotation
     annotate("text", x = 0.97, y = 0.03,
              label = sprintf("R\u00b2 = %.2f", R2_b),
              size = 4, fontface = "bold", color = "#E64A19",
              hjust = 1, vjust = 0) +
 
-    # Labels for example points
     {if (!is.null(example1) && !is.null(example2)) {
       list(
         annotate("segment",
@@ -559,6 +546,7 @@ create_model_misspecification_figure <- function(results_path = "model_misspecif
     labs(tag = "b")
 
 
+  # Nature double-column width: 180mm = 7.09in
   p_combined <- p_a + p_b +
     plot_layout(ncol = 2, widths = c(1, 1))
 
@@ -585,9 +573,7 @@ create_model_misspecification_figure <- function(results_path = "model_misspecif
 }
 
 
-# ================================================================================
-# Main Execution
-# ================================================================================
+# --- Main Execution ---
 
 main <- function() {
   results <- run_model_misspecification_simulation(
@@ -604,6 +590,8 @@ main <- function() {
   invisible(list(results = results, plot = plot))
 }
 
+
+# --- Run ---
 
 if (!interactive()) {
   results <- main()
