@@ -1,11 +1,8 @@
-# ================================================================================
-# Core Rescorla-Wagner Model Functions
-# ================================================================================
+# --- Core Rescorla-Wagner Model Functions ---
 #
 # Shared simulation functions used by the Shiny app
 #
 # Author: Kenny Yu
-# ================================================================================
 
 #' Simulate Single Conditioning Session
 #'
@@ -530,15 +527,11 @@ simulate_two_sessions_carryover <- function(alpha,
 }
 
 
-# ================================================================================
-# Pearce-Hall Model Functions
-# ================================================================================
+# --- Pearce-Hall Model Functions ---
 #
 # The Pearce-Hall model differs from RW in that learning rate (attention) is
 # dynamically updated based on prediction errors. High surprise → high attention.
 # After outcomes become predictable, attention decreases and learning slows.
-#
-# ================================================================================
 
 #' Simulate Pearce-Hall Learning Session
 #'
