@@ -1,0 +1,17 @@
+Copyright (c) 2026 Kenny Yu, Maria M. Robinson, Wolf Vanpaemel,
+Francis Tuerlinckx, and Jonas Zaman
+
+This work (the analysis and simulation code and the bundled Shiny app in this
+repository) is licensed under the Creative Commons Attribution 4.0 International
+License (CC BY 4.0). You are free to share and adapt the material for any
+purpose, even commercially, provided you give appropriate credit, provide a link
+to the license, and indicate if changes were made.
+
+To view a summary of this license, visit:
+    https://creativecommons.org/licenses/by/4.0/
+The full legal code is at:
+    https://creativecommons.org/licenses/by/4.0/legalcode
+
+The two bundled empirical datasets (data/yu2024_npj and data/steingroever2015)
+remain under the licenses of their original publications (see README.md) and are
+not covered by this license.

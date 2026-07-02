@@ -1,93 +1,82 @@
-# Fear Learning Paradox
+# Behavioral biomarker reliability can mislead mechanistic inference in precision psychiatry
 
-Code repository accompanying the manuscript:
+Simulation and analysis code, cached outputs, figures, the interactive app, and the two
+empirical datasets for the paper:
 
-**Behavioral summaries obscure reliable learning mechanisms**
-Kenny Yu, Maria M. Robinson, Wolf Vanpaemel, Francis Tuerlinckx, Jonas Zaman
+> Yu, K., Robinson, M. M., Vanpaemel, W., Tuerlinckx, F., & Zaman, J.
+> *Behavioral biomarker reliability can mislead mechanistic inference in precision psychiatry.*
 
-## Repository Structure
+DOI: 10.5281/zenodo.19221125
+
+## What this is
+
+The paper shows, through fear-conditioning simulations, that the test–retest reliability
+of behavioral summary measures can mislead mechanistic inference — a summary can look
+unreliable while the underlying learning is stable, or reliable while it tracks a stable
+response trait rather than learning — and that computational-model parameters help only
+when the model is adequate and the task design makes the target recoverable. Two existing
+trial-level datasets show the same information-loss signature in real behavior.
+
+## Contents
 
 ```
-├── shiny_app/          Interactive Shiny application
-├── analysis/
-│   ├── fig1_reliability_paradox/     Main reliability bootstrap
-│   ├── fig2_carryover_gradient/      Carry-over and generalization simulations
-│   ├── fig3_model_misspecification/  Pearce-Hall vs Rescorla-Wagner recovery
-│   ├── suppfig1_model_variance/     Model variance demonstration
-│   └── suppfig2_identifiability/    Trial count × reinforcement rate factorial
+analysis/   9 R scripts (one per figure/analysis) + README.md documenting each
+results/    cached simulation outputs; a re-run skips any simulation whose cache exists
+figures/    the manuscript figures (Fig 1–8, Supp Fig 1–2) + the Fig 1 TikZ source
+data/       the two empirical datasets used by the analyses (see below)
+shiny_app/  the interactive fear-learning-paradox app (Shiny), as linked from the paper
 ```
 
-## Interactive Application
+`analysis/README.md` maps every figure to the script and cache that produce it and gives
+the run order.
 
-The accompanying Shiny app lets you explore the reliability paradox interactively by manipulating learning rates, reinforcement schedules, noise levels, and model parameters.
+## Reproducing the results
 
-**Live app:** https://kennyccyu.shinyapps.io/fear-learning-paradox/
+Requires **R ≥ 4.3** with: `tidyverse`, `patchwork`, `future`, `future.apply`, `progressr`,
+`lme4`, `lmerTest`, `scales`, `psych`, `viridis` (loaded via `pacman`).
 
-To run locally:
+Run each script from **inside `analysis/`** (the scripts use relative paths `../results`,
+`../figures`, `../data`):
 
-```r
-install.packages(c("shiny", "bslib", "tidyverse", "patchwork"))
-shiny::runApp("shiny_app")
+```
+cd analysis
+Rscript reliability_paradox.R      # etc. — see analysis/README.md for the full order
 ```
 
-## Analysis Scripts
+Every simulation sets a seed and is cache-guarded: with the shipped `results/` caches in
+place, the figure scripts rebuild the figures in seconds; delete a cache to regenerate it
+from scratch. The `reliability_paradox` and `decomposition` simulations are the slow ones
+(bootstrap / repeated ICC fits).
 
-All simulations are self-contained with no external data dependencies.
+## Interactive app
 
-### Figure 1: Reliability paradox
+`shiny_app/` is the fear-learning-paradox app linked from the paper (also hosted at
+https://kennyccyu.shinyapps.io/fear-learning-paradox/). It lets you vary learning and
+response parameters and watch how identical behavior can arise from different mechanisms.
+Run it locally from inside `shiny_app/` (needs `shiny`, `bslib`, `tidyverse`, `shinyjs`):
 
-| Script | Description | Runtime |
-|--------|-------------|---------|
-| `pure_simulation_analysis.R` | Monte Carlo bootstrap (200 iterations, 6 conditions) | 10-30 min |
-| `behavioral_icc_1000trials.R` | Behavioral ICC at 1000 trials per session | ~2 min |
-
-### Figure 2: Carry-over and generalization
-
-| Script | Description | Runtime |
-|--------|-------------|---------|
-| `carryover_pure.R` | Carry-over gradient simulation (no generalization) | ~15 sec |
-| `carryover_with_gen.R` | Carry-over gradient with cross-stimulus generalization | ~15 sec |
-
-### Figure 3: Model misspecification
-
-| Script | Description | Runtime |
-|--------|-------------|---------|
-| `model_misspecification_simulation.R` | PH data generation + RW/PH recovery | 2-5 min |
-
-### Supplementary Figure 1: Model variance
-
-| Script | Description | Runtime |
-|--------|-------------|---------|
-| `model_variance_analysis.R` | Two exemplar participants with different learning rates | ~10 sec |
-
-### Supplementary Figure 2: Parameter identifiability
-
-| Script | Description | Runtime |
-|--------|-------------|---------|
-| `alpha_identifiability_simulation.R` | 7×7 factorial (trials × reinforcement rate) | 3-5 min |
-
-## Dependencies
-
-```r
-install.packages(c("tidyverse", "patchwork", "future.apply", "progressr"))
+```
+Rscript -e 'shiny::runApp()'
 ```
 
-R (v4.3+). Parallel computation uses `future.apply`.
+## Data
 
-## Models
+The empirical section uses two datasets, included here as used by the analysis:
 
-Two associative learning models are implemented:
+- **Fear conditioning** — `data/yu2024_npj/Data/data_exclude.rds`: trial-level
+  US-expectancy ratings from Yu et al. (2024). Only the acquisition CS+ data are used
+  (Fig 8a). The full dataset and materials are published separately by the original authors.
+- **Iowa Gambling Task** — `data/steingroever2015/IGTdataSteingroever2014/`: the many-labs
+  IGT dataset from Steingroever et al. (2015), *Journal of Open Psychology Data*. The
+  100-trial subset is used (Fig 8b). Please cite the original dataset and honor its license
+  when reusing it.
 
-- **Rescorla-Wagner (RW):** Fixed learning rate, prediction error-driven update
-- **Pearce-Hall (PH):** Dynamic attention-modulated learning rate
-
-Both use a sigmoidal response function mapping associative strengths to observable responses.
-
-## Contact
-
-Kenny Yu — kenny.yu@kuleuven.be
-KU Leuven / University of Hasselt, Belgium
+All simulation results use synthetic data generated by the code; no real data are needed
+to reproduce Figures 1–7 or the supplementary figures.
 
 ## License
 
-This code accompanies a scientific publication. Please cite the associated manuscript if you use or adapt this code.
+The code, including `shiny_app/`, is released under the Creative Commons Attribution 4.0
+International License (CC BY 4.0); see the `LICENSE` file.
+The two datasets remain under the licenses of their original publications and should be
+cited accordingly.

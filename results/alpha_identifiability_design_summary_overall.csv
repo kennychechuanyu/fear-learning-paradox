@@ -1,0 +1,2 @@
+"n_cells","n_trial_levels","n_rate_levels","mean_R2","median_R2","sd_R2","min_R2","max_R2","note"
+49,7,7,0.862529249922354,0.936214331604467,0.144861062098253,0.452492066659726,0.981714412629719,"Descriptive summary of the balanced trials x reinforcement grid. Because there is one R2 value per design cell, no residual degrees of freedom exist for valid F-tests or p-values."

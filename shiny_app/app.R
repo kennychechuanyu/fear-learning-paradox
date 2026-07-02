@@ -7,7 +7,9 @@ source("functions/rw_core.R")
 
 nature_colors <- c("#E64B35", "#4DBBD5", "#00A087", "#3C5488", "#F39B7F", "#8491B4")
 
-# --- UI COMPONENTS ---
+# ==============================================================================
+# UI COMPONENTS
+# ==============================================================================
 
 # Author footer component (reusable across all pages)
 author_footer <- function() {
@@ -30,7 +32,9 @@ ui <- page_navbar(
   id = "main_nav",
   header = shinyjs::useShinyjs(),
 
-  # -- MAIN PAGE: THE PARADOX --
+  # ============================================================================
+  # MAIN PAGE: THE PARADOX
+  # ============================================================================
   nav_panel(
     title = "The Paradox",
     icon = icon("home"),
@@ -138,7 +142,9 @@ ui <- page_navbar(
     )
   ),
 
-  # -- MEASURING LEARNING: BEHAVIORAL VS COGNITIVE MARKERS --
+  # ============================================================================
+  # MEASURING LEARNING: BEHAVIORAL VS COGNITIVE MARKERS
+  # ============================================================================
   nav_panel(
     title = "Measuring Learning",
     icon = icon("ruler"),
@@ -288,7 +294,9 @@ ui <- page_navbar(
     )
   ),
 
-  # -- SOURCE 1: CONTEXT-DEPENDENT BEHAVIOR --
+  # ============================================================================
+  # SOURCE 1: CONTEXT-DEPENDENT BEHAVIOR
+  # ============================================================================
   nav_panel(
     title = "Source 1: Context Sensitivity",
     icon = icon("exchange-alt"),
@@ -389,7 +397,9 @@ ui <- page_navbar(
     )
   ),
 
-  # -- SOURCE 2: MULTIPLE LATENT PROCESSES --
+  # ============================================================================
+  # SOURCE 2: MULTIPLE LATENT PROCESSES
+  # ============================================================================
   nav_panel(
     title = "Source 2: Multiple Processes",
     icon = icon("project-diagram"),
@@ -469,7 +479,9 @@ ui <- page_navbar(
     )
   ),
 
-  # -- SOURCE 3: MODEL MISSPECIFICATION --
+  # ============================================================================
+  # SOURCE 3: MODEL MISSPECIFICATION
+  # ============================================================================
   nav_panel(
     title = "Source 3: Model Misspecification",
     icon = icon("exclamation-triangle"),
@@ -554,7 +566,9 @@ ui <- page_navbar(
   )
 )
 
-# --- SERVER ---
+# ==============================================================================
+# SERVER
+# ==============================================================================
 
 server <- function(input, output, session) {
 
@@ -632,7 +646,9 @@ server <- function(input, output, session) {
     }
   })
 
-  # -- MEASURING LEARNING: INTERACTIVE DEMO --
+  # ============================================================================
+  # MEASURING LEARNING: INTERACTIVE DEMO
+  # ============================================================================
 
   data_measuring <- reactive({
     req(input$simulate_measuring)
@@ -730,7 +746,9 @@ server <- function(input, output, session) {
     )
   })
 
-  # -- HOME PAGE: THE PARADOX --
+  # ============================================================================
+  # HOME PAGE: THE PARADOX
+  # ============================================================================
 
   data_home <- reactive({
     req(input$simulate_home)
@@ -848,11 +866,14 @@ server <- function(input, output, session) {
     )
   })
 
-  # -- SOURCE 1A: SAME MECHANISM, DIFFERENT BEHAVIOR --
+  # ============================================================================
+  # SOURCE 1A: SAME MECHANISM, DIFFERENT BEHAVIOR
+  # ============================================================================
 
   generate_shock_timing <- function(timing, n_trials, n_shocks = NULL) {
     if (timing == "partial") {
       # 50% partial reinforcement - random shocks on half the trials
+      # This creates ongoing uncertainty - KEY for showing PH vs RW difference
       n_shocks_partial <- round(n_trials * 0.5)
       sort(sample(1:n_trials, n_shocks_partial))
     } else if (timing == "early") {
@@ -909,7 +930,9 @@ server <- function(input, output, session) {
     sprintf("%.2f", input$alpha_s1a)
   })
 
-  # -- SOURCE 1B: DIFFERENT MECHANISMS, SAME BEHAVIOR --
+  # ============================================================================
+  # SOURCE 1B: DIFFERENT MECHANISMS, SAME BEHAVIOR
+  # ============================================================================
 
   data_s1b <- reactive({
     req(input$simulate_s1b)
@@ -984,7 +1007,9 @@ server <- function(input, output, session) {
     )
   }, striped = TRUE, hover = TRUE, bordered = TRUE)
 
-  # -- SOURCE 2: MULTIPLE LATENT PROCESSES --
+  # ============================================================================
+  # SOURCE 2: MULTIPLE LATENT PROCESSES
+  # ============================================================================
 
   data_s2 <- reactive({
     req(input$simulate_s2)
@@ -1202,7 +1227,9 @@ server <- function(input, output, session) {
       )
   })
 
-  # -- SOURCE 3: MODEL MISSPECIFICATION --
+  # ============================================================================
+  # SOURCE 3: MODEL MISSPECIFICATION
+  # ============================================================================
 
   data_s3 <- reactive({
     req(input$simulate_s3)

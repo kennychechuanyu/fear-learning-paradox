@@ -1,8 +1,13 @@
-# --- Core Rescorla-Wagner Model Functions ---
+# ================================================================================
+# Core Rescorla-Wagner Model Functions
+# ================================================================================
 #
-# Shared simulation functions used by the Shiny app
+# Shared simulation functions extracted from proof-of-concept analyses
+# Used across all Shiny app modules
 #
 # Author: Kenny Yu
+# Date: October 2025
+# ================================================================================
 
 #' Simulate Single Conditioning Session
 #'
@@ -28,21 +33,34 @@ simulate_rw_session <- function(alpha,
                                 K = 100,
                                 sigma = 5) {
 
+  # Initialize associative value
   v <- 0
+
+  # Storage for trial-by-trial data
   responses <- numeric(n_trials)
   values <- numeric(n_trials)
 
   for (t in 1:n_trials) {
+    # Transform associative value to response scale (sigmoid)
     theta <- A + (K - A) / (1 + exp(-(w0 + w1 * v)))
+
+    # Generate observed response with noise
     responses[t] <- rnorm(1, theta, sigma)
+
+    # Store current value
     values[t] <- v
 
+    # Update value based on prediction error (Rescorla-Wagner rule)
     if (t %in% shock_trials) {
+      # Positive prediction error (US present)
       v <- v + alpha * (1 - v)
     } else {
+      # Negative prediction error (US absent / extinction)
       v <- v + alpha * (0 - v)
     }
   }
+
+  # Return structured data
   data.frame(
     trial = 1:n_trials,
     response = pmax(A, pmin(K, responses)),  # Enforce bounds
@@ -75,22 +93,32 @@ simulate_discrimination_session <- function(design,
                                            sigma_y = 2) {
 
   n_trials <- nrow(design)
-  v_plus <- 0
-  v_minus <- 0
+  v_plus <- 0    # CS+ value
+  v_minus <- 0   # CS- value
   responses <- numeric(n_trials)
 
   for (t in seq_len(n_trials)) {
+    # Calculate expected value for current trial (CS+ or CS-)
     g <- design$cs_plus[t] * v_plus + design$cs_minus[t] * v_minus
+
+    # Transform to response scale
     theta <- A + (K - A) / (1 + exp(-(w0 + w1 * g)))
+
+    # Observed response with noise
     responses[t] <- rnorm(1, theta, sigma_y)
 
+    # Update values using Rescorla-Wagner rule
     if (design$cs_plus[t] == 1) {
+      # CS+ trial: learn about shock presence/absence
       v_plus <- v_plus + alpha * (design$us_plus[t] - v_plus)
     }
     if (design$cs_minus[t] == 1) {
+      # CS- trial: learn shock is absent (value = -1)
       v_minus <- v_minus + alpha * (-1 - v_minus)
     }
   }
+
+  # Enforce response bounds
   pmax(A, pmin(K, responses))
 }
 
@@ -105,6 +133,8 @@ simulate_discrimination_session <- function(design,
 calculate_behavioral_indices <- function(responses) {
 
   n_trials <- length(responses)
+
+  # Remove missing data
   valid_responses <- responses[!is.na(responses)]
 
   if (length(valid_responses) < 3) {
@@ -116,13 +146,18 @@ calculate_behavioral_indices <- function(responses) {
     ))
   }
 
+  # Mean response level
   mean_resp <- mean(valid_responses, na.rm = TRUE)
 
+  # Linear trend (slope)
   trial_seq <- seq_along(valid_responses)
   slope_model <- lm(valid_responses ~ trial_seq)
   slope <- coef(slope_model)[2]
 
+  # Change from first to last trial
   first_last_diff <- valid_responses[length(valid_responses)] - valid_responses[1]
+
+  # Final trial response
   final_trial <- valid_responses[length(valid_responses)]
 
   list(
@@ -149,6 +184,7 @@ create_experimental_design <- function(n_trials = 20,
                                       ordering = "random",
                                       ratio = "1:1") {
 
+  # Determine CS+ and CS- trial counts based on ratio
   if (ratio == "1:1") {
     n_cs_plus <- round(n_trials / 2)
   } else if (ratio == "1:2") {
@@ -161,10 +197,12 @@ create_experimental_design <- function(n_trials = 20,
 
   n_cs_minus <- n_trials - n_cs_plus
 
+  # Create trial sequence based on ordering
   if (ordering == "blocked") {
     cs_sequence <- c(rep(1, n_cs_plus), rep(0, n_cs_minus))
   } else if (ordering == "alternating") {
     cs_sequence <- rep(c(1, 0), length.out = n_trials)
+    # Adjust to match exact counts
     while (sum(cs_sequence) > n_cs_plus) {
       cs_sequence[which(cs_sequence == 1)[length(which(cs_sequence == 1))]] <- 0
     }
@@ -175,10 +213,12 @@ create_experimental_design <- function(n_trials = 20,
     cs_sequence <- sample(c(rep(1, n_cs_plus), rep(0, n_cs_minus)))
   }
 
+  # Determine which CS+ trials are reinforced (shocked)
   cs_plus_trials <- which(cs_sequence == 1)
   n_shocks <- round(reinforcement_rate * n_cs_plus)
   shocked_trials <- sample(cs_plus_trials, n_shocks)
 
+  # Build design data frame
   design <- data.frame(
     cs_plus = cs_sequence,
     cs_minus = 1 - cs_sequence,
@@ -281,34 +321,51 @@ simulate_discrimination_generalization <- function(alpha,
                                                    K = 100,
                                                    sigma = 3) {
 
-  v_plus <- 0
-  v_minus <- 0
+  # Initialize associative values
+  v_plus <- 0   # CS+ value
+  v_minus <- 0  # CS- value
+
+  # Storage
   responses <- numeric(n_trials)
   values_plus <- numeric(n_trials)
   values_minus <- numeric(n_trials)
   stimulus <- character(n_trials)
 
   for (t in 1:n_trials) {
+    # Determine current stimulus
     is_cs_plus <- t %in% cs_plus_trials
     is_us <- t %in% us_trials
+
+    # Get current value for response generation
     current_v <- if (is_cs_plus) v_plus else v_minus
 
+    # Transform to response scale
     theta <- A + (K - A) / (1 + exp(-(w0 + w1 * current_v)))
+
+    # Generate observed response
     responses[t] <- rnorm(1, theta, sigma)
 
+    # Store values
     values_plus[t] <- v_plus
     values_minus[t] <- v_minus
     stimulus[t] <- if (is_cs_plus) "CS+" else "CS-"
 
+    # Update values with learning and generalization
     if (is_cs_plus) {
+      # CS+ trial: direct learning for CS+, generalized learning for CS-
       us_present <- if (is_us) 1 else 0
-      pe <- us_present - v_plus
-      v_plus <- v_plus + alpha * pe
-      v_minus <- v_minus + generalization * alpha * pe
+      pe <- us_present - v_plus  # prediction error
+
+      v_plus <- v_plus + alpha * pe  # direct learning
+      v_minus <- v_minus + generalization * alpha * pe  # generalized learning
+
     } else {
-      pe <- -1 - v_minus
-      v_minus <- v_minus + alpha * pe
-      v_plus <- v_plus + generalization * alpha * pe
+      # CS- trial: direct learning for CS-, generalized learning for CS+
+      # CS- is always safe (US = -1 to create inhibitory learning)
+      pe <- -1 - v_minus  # prediction error (safety signal)
+
+      v_minus <- v_minus + alpha * pe  # direct learning
+      v_plus <- v_plus + generalization * alpha * pe  # generalized learning
     }
   }
 
@@ -362,18 +419,22 @@ simulate_hierarchical_alpha <- function(alpha_acq,
   phases <- character(n_trials)
 
   for (t in 1:n_trials) {
+    # Determine phase
     is_acquisition <- t <= n_trials_acq
     phases[t] <- if (is_acquisition) "Acquisition" else "Extinction"
 
+    # Transform to response
     theta <- A + (K - A) / (1 + exp(-(w0 + w1 * v)))
     responses[t] <- rnorm(1, theta, sigma)
     values[t] <- v
 
+    # Update with phase-specific learning rate
     current_alpha <- if (is_acquisition) alpha_acq else alpha_ext
+
     if (t %in% shock_trials) {
-      v <- v + current_alpha * (1 - v)
+      v <- v + current_alpha * (1 - v)  # shock present
     } else {
-      v <- v + current_alpha * (0 - v)
+      v <- v + current_alpha * (0 - v)  # shock absent
     }
   }
 
@@ -399,12 +460,14 @@ simulate_hierarchical_alpha <- function(alpha_acq,
 #' @return Estimated alpha value
 fit_fixed_alpha <- function(responses, shock_trials, n_trials) {
 
+  # Fixed parameters (assumed known)
   w0 <- -1
   w1 <- 4
   A <- 0
   K <- 100
   sigma <- 3
 
+  # Log-likelihood function
   log_lik <- function(alpha) {
     if (alpha <= 0.01 || alpha >= 0.99) return(-Inf)
 
@@ -425,12 +488,19 @@ fit_fixed_alpha <- function(responses, shock_trials, n_trials) {
     ll
   }
 
-  tryCatch({
-    opt <- optimize(function(a) -log_lik(a), interval = c(0.01, 0.99))
+  # Optimize
+  result <- tryCatch({
+    opt <- optimize(
+      f = function(a) -log_lik(a),
+      interval = c(0.01, 0.99),
+      maximum = FALSE
+    )
     opt$minimum
   }, error = function(e) {
     NA_real_
   })
+
+  result
 }
 
 
@@ -461,10 +531,12 @@ simulate_two_sessions_carryover <- function(alpha,
                                             A = 0,
                                             K = 100) {
 
+  # Sigmoidal response function (consistent with main analysis)
   response_fn <- function(v) {
     A + (K - A) / (1 + exp(-(w0 + w1 * v)))
   }
 
+  # SESSION 1: Start from zero (naive)
   v_s1 <- 0
   session1_data <- data.frame(
     session = integer(),
@@ -477,7 +549,10 @@ simulate_two_sessions_carryover <- function(alpha,
   shock_trials_s1 <- sort(sample(1:n_trials_s1, round(n_trials_s1 * shock_rate)))
 
   for (t in 1:n_trials_s1) {
+    # Generate response using sigmoidal transformation
     response_t <- response_fn(v_s1)
+
+    # Store trial data
     session1_data <- rbind(session1_data, data.frame(
       session = 1,
       trial = t,
@@ -486,6 +561,7 @@ simulate_two_sessions_carryover <- function(alpha,
       shock = t %in% shock_trials_s1
     ))
 
+    # Update v for NEXT trial based on outcome
     if (t %in% shock_trials_s1) {
       v_s1 <- v_s1 + alpha * (1 - v_s1)
     } else {
@@ -493,6 +569,8 @@ simulate_two_sessions_carryover <- function(alpha,
     }
   }
 
+  # SESSION 2: Start with memory carry-over
+  # Use the LAST response's v value from Session 1, scaled by memory retention
   v_s1_final <- session1_data$value[nrow(session1_data)]
   v_s2 <- v_s1_final * memory_retention
 
@@ -507,7 +585,10 @@ simulate_two_sessions_carryover <- function(alpha,
   shock_trials_s2 <- sort(sample(1:n_trials_s2, round(n_trials_s2 * shock_rate)))
 
   for (t in 1:n_trials_s2) {
+    # Generate response using sigmoidal transformation
     response_t <- response_fn(v_s2)
+
+    # Store trial data
     session2_data <- rbind(session2_data, data.frame(
       session = 2,
       trial = t,
@@ -516,6 +597,7 @@ simulate_two_sessions_carryover <- function(alpha,
       shock = t %in% shock_trials_s2
     ))
 
+    # Update v for NEXT trial
     if (t %in% shock_trials_s2) {
       v_s2 <- v_s2 + alpha * (1 - v_s2)
     } else {
@@ -523,15 +605,20 @@ simulate_two_sessions_carryover <- function(alpha,
     }
   }
 
+  # Combine both sessions
   bind_rows(session1_data, session2_data)
 }
 
 
-# --- Pearce-Hall Model Functions ---
+# ================================================================================
+# Pearce-Hall Model Functions
+# ================================================================================
 #
 # The Pearce-Hall model differs from RW in that learning rate (attention) is
 # dynamically updated based on prediction errors. High surprise → high attention.
 # After outcomes become predictable, attention decreases and learning slows.
+#
+# ================================================================================
 
 #' Simulate Pearce-Hall Learning Session
 #'
@@ -559,21 +646,38 @@ simulate_ph_session <- function(alpha_initial,
                                 K = 100,
                                 sigma = 3) {
 
+  # Initialize associative value and attention
   v <- 0
-  attention <- alpha_initial
+  attention <- alpha_initial  # Start with high attention
+
+  # Storage
   responses <- numeric(n_trials)
   values <- numeric(n_trials)
   attentions <- numeric(n_trials)
 
   for (t in 1:n_trials) {
+    # Transform associative value to response scale
     theta <- A + (K - A) / (1 + exp(-(w0 + w1 * v)))
+
+    # Generate observed response with noise
     responses[t] <- rnorm(1, theta, sigma)
+
+    # Store current state
     values[t] <- v
     attentions[t] <- attention
 
+    # Determine outcome for this trial
     outcome <- if (t %in% shock_trials) 1 else 0
+
+    # Calculate prediction error (absolute)
     pe <- outcome - v
+
+    # Update value with CURRENT attention level (Pearce-Hall rule)
     v <- v + attention * pe
+
+    # Update attention for NEXT trial based on absolute prediction error
+    # High surprise → attention stays high
+    # Low surprise → attention decays
     attention <- kappa * abs(pe) + (1 - kappa) * attention
   }
 
@@ -611,6 +715,7 @@ fit_rw_to_ph_data <- function(responses,
                                K = 100,
                                sigma = 3) {
 
+  # Log-likelihood for RW model (wrong model!)
   log_lik <- function(alpha) {
     if (alpha <= 0.01 || alpha >= 0.99) return(-Inf)
 
@@ -628,12 +733,19 @@ fit_rw_to_ph_data <- function(responses,
     ll
   }
 
-  tryCatch({
-    opt <- optimize(function(a) -log_lik(a), interval = c(0.01, 0.99))
+  # Optimize
+  result <- tryCatch({
+    opt <- optimize(
+      f = function(a) -log_lik(a),
+      interval = c(0.01, 0.99),
+      maximum = FALSE
+    )
     opt$minimum
   }, error = function(e) {
     NA_real_
   })
+
+  result
 }
 
 

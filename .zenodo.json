@@ -1,0 +1,22 @@
+{
+  "title": "Code, data, and interactive app for: Behavioral biomarker reliability can mislead mechanistic inference in precision psychiatry",
+  "description": "R simulation and analysis code, cached outputs, figures, the two empirical datasets, and the interactive Shiny app accompanying the paper by Yu, Robinson, Vanpaemel, Tuerlinckx, and Zaman. See README.md for contents and reproduction instructions.",
+  "upload_type": "software",
+  "license": "cc-by-4.0",
+  "version": "2.0.0",
+  "creators": [
+    {"name": "Yu, Kenny"},
+    {"name": "Robinson, Maria M."},
+    {"name": "Vanpaemel, Wolf"},
+    {"name": "Tuerlinckx, Francis"},
+    {"name": "Zaman, Jonas"}
+  ],
+  "keywords": [
+    "test-retest reliability",
+    "computational modeling",
+    "fear conditioning",
+    "reinforcement learning",
+    "precision psychiatry",
+    "parameter recovery"
+  ]
+}

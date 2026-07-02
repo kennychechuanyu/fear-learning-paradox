@@ -1,0 +1,4 @@
+"term","sum_sq","proportion_of_surface_variation","interpretation"
+"trials",0.745556470698053,0.740177665488216,"Average differences across trial counts"
+"rate",0.238523202012064,0.236802380193633,"Average differences across reinforcement rates"
+"trials:rate",0.0231872382771112,0.0230199543181511,"Remaining non-additive structure in the 49-cell R2 surface"
