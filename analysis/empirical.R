@@ -80,8 +80,6 @@ if (!file.exists(igt_cache)) {
   DATA_DIR <- "../data/steingroever2015/IGTdataSteingroever2014"
 
   choice <- read.csv(file.path(DATA_DIR, "choice_100.csv"), row.names = 1)
-  wi     <- read.csv(file.path(DATA_DIR, "wi_100.csv"), row.names = 1)
-  lo     <- read.csv(file.path(DATA_DIR, "lo_100.csv"), row.names = 1)
 
   N <- nrow(choice)
   n_trials <- 100
@@ -114,26 +112,6 @@ if (!file.exists(igt_cache)) {
     summ_mat[i, "switch_rate"] <- mean(ch[-1] != ch[-n_trials])
   }
 
-  ## z-score summaries
-  summ_z <- scale(summ_mat)
-
-  ## pairwise distances
-  n_pairs <- N * (N - 1) / 2
-
-  pair_summ_dist <- numeric(n_pairs)
-  pair_traj_cor  <- numeric(n_pairs)
-
-  idx <- 0
-  for (i in 1:(N - 1)) {
-    for (j in (i + 1):N) {
-      idx <- idx + 1
-      pair_summ_dist[idx] <- sqrt(sum((summ_z[i, ] - summ_z[j, ])^2, na.rm = TRUE))
-      pair_traj_cor[idx]  <- cor(block_traj[i, ], block_traj[j, ])
-    }
-  }
-
-  overall_r <- cor(pair_summ_dist, pair_traj_cor, use = "complete.obs")
-
   ## trial-level grain: running proportion of advantageous choices (10-trial window)
   run_prop <- matrix(NA, N, n_trials)
   for (i in 1:N) {
@@ -156,7 +134,6 @@ if (!file.exists(igt_cache)) {
     summ_mat = summ_mat,          # 504 x 4 (net_score, net_last20, learning_slope, switch_rate)
     block_traj = block_traj,      # 504 x 5 block net scores (kept for reference)
     run_prop = run_prop,          # 504 x 100 running proportion (the reported trajectory)
-    overall_r_block = overall_r,
     overall_r_trial = overall_r_trial,
     N = N
   )
