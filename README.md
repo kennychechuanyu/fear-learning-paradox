@@ -11,9 +11,9 @@ DOI: 10.5281/zenodo.19221125
 ## What this is
 
 The paper shows, through fear-conditioning simulations, that the test–retest reliability
-of behavioral summary measures can mislead mechanistic inference — a summary can look
+of behavioral summary measures can mislead mechanistic inference - a summary can look
 unreliable while the underlying learning is stable, or reliable while it tracks a stable
-response trait rather than learning — and that computational-model parameters help only
+response trait rather than learning - and that computational-model parameters help only
 when the model is adequate and the task design makes the target recoverable. Two existing
 trial-level datasets show the same information-loss signature in real behavior.
 
@@ -40,7 +40,7 @@ Run each script from **inside `analysis/`** (the scripts use relative paths `../
 
 ```
 cd analysis
-Rscript reliability_paradox.R      # etc. — see analysis/README.md for the full order
+Rscript reliability_paradox.R      # etc. - see analysis/README.md for the full order
 ```
 
 Every simulation sets a seed and is cache-guarded: with the shipped `results/` caches in
@@ -63,10 +63,10 @@ Rscript -e 'shiny::runApp()'
 
 The empirical section uses two datasets, included here as used by the analysis:
 
-- **Fear conditioning** — `data/yu2024_npj/Data/data_exclude.rds`: trial-level
+- **Fear conditioning** - `data/yu2024_npj/Data/data_exclude.rds`: trial-level
   US-expectancy ratings from Yu et al. (2024). Only the acquisition CS+ data are used
   (Fig 8a). The full dataset and materials are published separately by the original authors.
-- **Iowa Gambling Task** — `data/steingroever2015/IGTdataSteingroever2014/`: the many-labs
+- **Iowa Gambling Task** - `data/steingroever2015/IGTdataSteingroever2014/`: the many-labs
   IGT dataset from Steingroever et al. (2015), *Journal of Open Psychology Data*. The
   100-trial subset is used (Fig 8b). Please cite the original dataset and honor its license
   when reusing it.

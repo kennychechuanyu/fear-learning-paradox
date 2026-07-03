@@ -95,7 +95,7 @@ ui <- page_navbar(
 
         column(9,
           h3("Individual Patterns: Inconsistent", style = "color: #2C3E50; text-align: center; margin-bottom: 20px;"),
-          p("Each person tested twice. Different shock patterns each session. Lines cross everywhere—individuals are unreliable.",
+          p("Each person tested twice. Different shock patterns each session. Lines cross everywhere - individuals are unreliable.",
             style = "text-align: center; color: #666; margin-bottom: 20px;"),
           plotOutput("plot_home_individual", height = "350px"),
 
@@ -534,7 +534,7 @@ ui <- page_navbar(
             hr(),
             div(style = "background: #fff3cd; padding: 12px; border-radius: 5px; border-left: 3px solid #ffc107;",
               p(style = "font-size: 0.9em; margin: 0; color: #856404;",
-                strong("Key insight: "), "If you assume RW (fixed learning) but the person uses PH (attention-weighted learning), you get the wrong cognitive marker. Lower reinforcement rates (40-60%) create more uncertainty, keeping PH attention high while RW learns intermediate values—showing that wrong model = wrong assumptions about the underlying process.")
+                strong("Key insight: "), "If you assume RW (fixed learning) but the person uses PH (attention-weighted learning), you get the wrong cognitive marker. Lower reinforcement rates (40-60%) create more uncertainty, keeping PH attention high while RW learns intermediate values - showing that wrong model = wrong assumptions about the underlying process.")
             )
           )
         ),

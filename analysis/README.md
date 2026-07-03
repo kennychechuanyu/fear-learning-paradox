@@ -21,15 +21,15 @@ Run scripts from inside `analysis/`; they use relative paths (`../results`, `../
 
 (Figure 1, the framework schematic, is the TikZ file `figures/fig1_framework_src.tex`, not produced by these scripts.)
 
-- `non_invertibility.R` — Fig 2, the four-participant non-invertibility witness (self-contained, seeded).
-- `reliability_paradox.R` — the rate-only reliability bootstrap; writes the Fig 3a–c panel caches.
-- `decomposition.R` — slope and eight-summary variance decompositions; writes the Fig 3d / Fig 4 caches. (Slowest script: the ICC bootstraps take roughly an hour.)
-- `assemble_paradox_figures.R` — assembles Fig 3 and Fig 4 from the caches above.
-- `misspecification.R` — cross-model (Rescorla–Wagner vs Pearce–Hall) recovery; writes Fig 5.
-- `carryover_generalization.R` — carry-over and generalization reliability gradient (Fig 6).
-- `design_recovery.R` — design factorial recovery map (Fig 7).
-- `empirical.R` — the Fig 8 pipeline in one file: compression-index helpers, acquisition/IGT data prep, and the two-scatter figure (coupling + a permutation-floor significance test).
-- `supplementary_analyses.R` — drift robustness (Supp 1) and empirical-Bayes vs MLE (Supp 2).
+- `non_invertibility.R` - Fig 2, the four-participant non-invertibility witness (self-contained, seeded).
+- `reliability_paradox.R` - the rate-only reliability bootstrap; writes the Fig 3a–c panel caches.
+- `decomposition.R` - slope and eight-summary variance decompositions; writes the Fig 3d / Fig 4 caches. (Slowest script: the ICC bootstraps take roughly an hour.)
+- `assemble_paradox_figures.R` - assembles Fig 3 and Fig 4 from the caches above.
+- `misspecification.R` - cross-model (Rescorla–Wagner vs Pearce–Hall) recovery; writes Fig 5.
+- `carryover_generalization.R` - carry-over and generalization reliability gradient (Fig 6).
+- `design_recovery.R` - design factorial recovery map (Fig 7).
+- `empirical.R` - the Fig 8 pipeline in one file: compression-index helpers, acquisition/IGT data prep, and the two-scatter figure (coupling + a permutation-floor significance test).
+- `supplementary_analyses.R` - drift robustness (Supp 1) and empirical-Bayes vs MLE (Supp 2).
 
 ## Run order
 

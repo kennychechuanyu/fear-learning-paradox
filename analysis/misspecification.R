@@ -354,8 +354,8 @@ cat(sprintf("  RW→PH collapse: ID %d (true=%.2f, recov=%.2f), ID %d (true=%.2f
             ex2_lo$participant_id, ex2_lo$alpha_true, ex2_lo$rw_data_ph_fit,
             ex2_hi$participant_id, ex2_hi$alpha_true, ex2_hi$rw_data_ph_fit))
 
-col_lo <- "#E69F00"   # orange — lower true alpha
-col_hi <- "#009E73"   # green  — higher true alpha
+col_lo <- "#E69F00"   # orange - lower true alpha
+col_hi <- "#009E73"   # green - higher true alpha
 
 level_gen <- c("PH-generated data", "RW-generated data")
 level_fit <- c("PH recovery", "RW recovery")
