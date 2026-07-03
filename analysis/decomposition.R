@@ -329,10 +329,10 @@ fig <- p_a | p_b
 fig <- fig + plot_annotation(tag_levels = "a") &
   theme(plot.tag = element_text(face = "bold", size = 12))
 
-ggsave("../figures/fig2_variance_decomposition.pdf",
+ggsave("../figures/variance_decomposition.pdf",
        fig, width = 10, height = 5, device = cairo_pdf)
 
-# ---- eight-summary decomposition, all-vary population (Fig 3) ----
+# ---- eight-summary decomposition, all-vary population (Fig 4) ----
 
 # eight behavioral summaries
 compute_all_summaries <- function(responses, design) {
@@ -622,5 +622,5 @@ fig <- ggplot(plot_df, aes(x = proportion, y = summary, fill = source)) +
   ) +
   guides(fill = guide_legend(nrow = 2, reverse = TRUE))
 
-ggsave(file.path(fig_dir, "fig3_nuisance_decomposition.pdf"),
+ggsave(file.path(fig_dir, "nuisance_decomposition.pdf"),
        fig, width = 8, height = 5, device = cairo_pdf)

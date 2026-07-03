@@ -561,7 +561,7 @@ create_figure_1 <- function(summary_data, trajectory_data = NULL) {
   fig
 }
 
-# 8A. Monte Carlo (slow; cache-guarded)
+# Monte Carlo (slow; cache-guarded)
 cache_file <- file.path(res_dir, 'pure_simulation_results.RData')
 if (file.exists(cache_file)) {
   message('Loading cached Monte Carlo results (skipping slow simulation).')
@@ -601,7 +601,7 @@ if (file.exists(cache_file)) {
 }
 
 
-# 8B. figures (fast)
+# figures (fast)
 summary_data <- summarize_results(all_bootstrap_results)
 
 summary_print <- summary_data %>%
@@ -676,7 +676,7 @@ fig_icc <- create_figure_1(summary_data, trajectory_data = NULL)
 
 fig_combined <- panel_traj / fig_icc + plot_layout(heights = c(1, 2.5))
 
-ggsave(file.path(fig_dir, 'fig4_reliability_paradox.pdf'), fig_combined,
+ggsave(file.path(fig_dir, 'reliability_paradox.pdf'), fig_combined,
        width = 7, height = 7, bg = 'white', device = cairo_pdf, units = 'in')
 
 # panels reused by assemble_paradox_figures.R
